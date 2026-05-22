@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Automated College Timetable System - Time Table Management</title>
+    <!-- Google Fonts for modern premium typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <i class="fa-solid fa-star brand-icon"></i>
+                <div class="brand-text">
+                    <h1>Time Table Management</h1>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="#dashboard" class="nav-item active" data-tab="dashboard">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </a>
+                <div class="nav-section-title">Academic Data</div>
+                <a href="#teachers" class="nav-item" data-tab="teachers">
+                    <i class="fa-solid fa-chalkboard-user"></i>
+                    <span>Teachers</span>
+                </a>
+                <a href="#subjects" class="nav-item" data-tab="subjects">
+                    <i class="fa-solid fa-book"></i>
+                    <span>Subjects</span>
+                </a>
+                <a href="#classes" class="nav-item" data-tab="classes">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                    <span>SemSec</span>
+                </a>
+                <a href="#rooms" class="nav-item" data-tab="rooms">
+                    <i class="fa-solid fa-door-open"></i>
+                    <span>Classrooms</span>
+                </a>
+                <div class="nav-section-title">Timetable Engine</div>
+                <a href="#timetable" class="nav-item" data-tab="timetable">
+                    <i class="fa-solid fa-calendar-days"></i>
+                    <span>Time Table Generation</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button id="btn-reset-db" class="btn btn-secondary btn-sm" title="Reset all data to default samples">
+                    <i class="fa-solid fa-rotate-left"></i> Reset Database
+                </button>
+                <button id="btn-purge-db" class="btn btn-danger btn-sm" title="Wipe all data from the database">
+                    <i class="fa-solid fa-trash-can"></i> Purge Database
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Application Area -->
+        <main class="main-content">
+            <!-- Header bar -->
+            <header class="main-header">
+                <div class="header-search">
+                    <h2 id="current-panel-title">System Dashboard</h2>
+                </div>
+                <div class="header-profile">
+                    <div class="profile-avatar">
+                        <i class="fa-solid fa-user-shield"></i>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Notifications Container -->
+            <div id="notification-area"></div>
+
+            <!-- Tab Panels Content -->
+            <div class="content-container">
+
+                <!-- 1. Dashboard Tab -->
+                <section id="panel-dashboard" class="tab-panel active">
+
+                    <!-- Metrics Grid -->
+                    <div class="metrics-grid">
+                        <div class="metric-card bg-glass animate-fade-in">
+                            <div class="metric-header">
+                                <span class="metric-title">Faculty Staff</span>
+                                <i class="fa-solid fa-chalkboard-user icon-teachers"></i>
+                            </div>
+                            <h2 class="metric-value" id="stat-teachers">0</h2>
+                            <p class="metric-desc">Registered profiles</p>
+                        </div>
+
+                        <div class="metric-card bg-glass animate-fade-in" style="animation-delay: 0.1s;">
+                            <div class="metric-header">
+                                <span class="metric-title">Subjects & Courses</span>
+                                <i class="fa-solid fa-book icon-subjects"></i>
+                            </div>
+                            <h2 class="metric-value" id="stat-subjects">0</h2>
+                            <p class="metric-desc">Allocated lectures</p>
+                        </div>
+
+                        <div class="metric-card bg-glass animate-fade-in" style="animation-delay: 0.2s;">
+                            <div class="metric-header">
+                                <span class="metric-title">SemSecs</span>
+                                <i class="fa-solid fa-graduation-cap icon-classes"></i>
+                            </div>
+                            <h2 class="metric-value" id="stat-classes">0</h2>
+                            <p class="metric-desc">Semesters & sections</p>
+                        </div>
+
+                        <div class="metric-card bg-glass animate-fade-in" style="animation-delay: 0.3s;">
+                            <div class="metric-header">
+                                <span class="metric-title">Classrooms</span>
+                                <i class="fa-solid fa-door-open icon-rooms"></i>
+                            </div>
+                            <h2 class="metric-value" id="stat-rooms">0</h2>
+                            <p class="metric-desc">Physical capacities</p>
+                        </div>
+                    </div>
+
+                </section>
+
+                <!-- 2. Teachers Tab -->
+                <section id="panel-teachers" class="tab-panel">
+                    <div class="panel-layout-grid">
+                        <div class="form-container bg-glass">
+                            <h3>Add Faculty Member</h3>
+                            <form id="form-teacher">
+                                <div class="form-group">
+                                    <label for="teacher-id">Teacher ID</label>
+                                    <input type="text" id="teacher-id" placeholder="e.g. AI106" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="teacher-dept">Department</label>
+                                    <select id="teacher-dept" required>
+                                        <option value="cse-aiml">CSE-AIML</option>
+                                        <option value="cse">CSE</option>
+                                        <option value="ise">ISE</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="teacher-name">Full Name</label>
+                                    <input type="text" id="teacher-name" placeholder="e.g. Prof. David Miller" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-block">
+                                    <i class="fa-solid fa-user-plus"></i> Save Faculty Member
+                                </button>
+                            </form>
+                        </div>
+                        <div class="table-container bg-glass">
+                            <h3>Registered Teachers</h3>
+                            <div class="table-scroll">
+                                <table id="table-teachers">
+                                    <thead>
+                                        <tr>
+                                            <th>Teacher ID</th>
+                                            <th>Name</th>
+                                            <th>Department</th>
+                                            <th class="actions-col">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Dynamically generated rows -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 3. Subjects Tab -->
+                <section id="panel-subjects" class="tab-panel">
+                    <div class="panel-layout-grid">
+                        <div class="form-container bg-glass">
+                            <h3>Add Subject Course</h3>
+                            <form id="form-subject">
+                                <div class="form-group">
+                                    <label for="subject-id">Subject Code</label>
+                                    <input type="text" id="subject-id" placeholder="e.g. CS501" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="subject-name">Subject Title</label>
+                                    <input type="text" id="subject-name" placeholder="e.g. Artificial Intelligence" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="subject-hours">Weekly Required Hours</label>
+                                    <input type="number" id="subject-hours" min="1" max="10" value="3" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="subject-class">Target Class Group (F.K.)</label>
+                                    <select id="subject-class" required>
+                                        <option value="">-- Choose Class Group --</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="subject-teacher">Assigned Teacher (F.K.)</label>
+                                    <select id="subject-teacher" required>
+                                        <option value="">-- Choose Teacher --</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-block">
+                                    <i class="fa-solid fa-floppy-disk"></i> Register Subject
+                                </button>
+                            </form>
+                        </div>
+                        <div class="table-container bg-glass">
+                            <h3>Subject Curriculums</h3>
+                            <div class="table-scroll">
+                                <table id="table-subjects">
+                                    <thead>
+                                        <tr>
+                                            <th>Code</th>
+                                            <th>Title</th>
+                                            <th>Hours</th>
+                                            <th>Class Group</th>
+                                            <th>Assigned Faculty</th>
+                                            <th class="actions-col">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Dynamically generated rows -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 4. Class Groups Tab -->
+                <section id="panel-classes" class="tab-panel">
+                    <div class="panel-layout-grid">
+                        <div class="form-container bg-glass">
+                            <h3>Add Class / SemSec</h3>
+                            <form id="form-class">
+                                <div class="form-group">
+                                    <label for="class-id">Class ID</label>
+                                    <input type="text" id="class-id" placeholder="e.g. CSE3B" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="class-name">Department Name</label>
+                                    <select id="class-name" required>
+                                        <option value="cse-aiml">CSE-AIML</option>
+                                        <option value="cse">CSE</option>
+                                        <option value="ise">ISE</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="class-semester">Semester Number</label>
+                                    <input type="number" id="class-semester" min="1" max="8" value="1" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-block">
+                                    <i class="fa-solid fa-users"></i> Save Class Group
+                                </button>
+                            </form>
+                        </div>
+                        <div class="table-container bg-glass">
+                            <h3>SemSec Registers</h3>
+                            <div class="table-scroll">
+                                <table id="table-classes">
+                                    <thead>
+                                        <tr>
+                                            <th>Class ID</th>
+                                            <th>Department</th>
+                                            <th>Semester</th>
+                                            <th class="actions-col">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Dynamically generated rows -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 5. Rooms Tab -->
+                <section id="panel-rooms" class="tab-panel">
+                    <div class="panel-layout-grid">
+                        <div class="form-container bg-glass">
+                            <h3>Add Physical Classroom</h3>
+                            <form id="form-room">
+                                <div class="form-group">
+                                    <label for="room-id">Room ID</label>
+                                    <input type="text" id="room-id" placeholder="e.g. R301" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="room-dept">Department</label>
+                                    <select id="room-dept" required>
+                                        <option value="cse-aiml">CSE-AIML</option>
+                                        <option value="cse">CSE</option>
+                                        <option value="ise">ISE</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="room-no">Room Number / Room Tag</label>
+                                    <input type="text" id="room-no" placeholder="e.g. 301 (Chemistry Lab)" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-block">
+                                    <i class="fa-solid fa-door-closed"></i> Save Classroom
+                                </button>
+                            </form>
+                        </div>
+                        <div class="table-container bg-glass">
+                            <h3>Classroom Directories</h3>
+                            <div class="table-scroll">
+                                <table id="table-rooms">
+                                    <thead>
+                                        <tr>
+                                            <th>Room ID</th>
+                                            <th>Department</th>
+                                            <th>Room Location Tag</th>
+                                            <th class="actions-col">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Dynamically generated rows -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+
+                <!-- 8. Roster Timetable Tab -->
+                <section id="panel-timetable" class="tab-panel">
+                    <div class="timetable-control-panel bg-glass">
+                        <div class="filters-row">
+                            <div class="filter-group">
+                                <label for="filter-type">Filter Time Table View By:</label>
+                                <select id="filter-type">
+                                    <option value="class">Class Group (SemSec)</option>
+                                    <option value="teacher">Faculty Professor</option>
+                                    <option value="room">Classroom Location</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label for="filter-value" id="label-filter-value">Select SemSec:</label>
+                                <select id="filter-value">
+                                    <!-- Dynamic options -->
+                                </select>
+                            </div>
+                            <div class="roster-actions">
+                                <button id="btn-trigger-solver" class="btn btn-primary btn-glow" title="Solve and generate conflict-free schedules instantly">
+                                    <i class="fa-solid fa-star"></i> Generate Time Table
+                                </button>
+                                <button id="btn-export-csv" class="btn btn-secondary">
+                                    <i class="fa-solid fa-file-csv"></i> Export CSV
+                                </button>
+                                <button id="btn-print-pdf" class="btn btn-primary btn-glow">
+                                    <i class="fa-solid fa-print"></i> Export / Print PDF
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Timetable Grid Container -->
+                    <div class="timetable-grid-wrapper bg-glass">
+                        <div class="timetable-print-header">
+                            <h2 id="print-title">Academic Schedule - CSE5A</h2>
+                            <span id="print-meta">System: Automated Time Table Management | Database: Connected</span>
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="timetable-matrix" id="matrix-timetable">
+                                <thead>
+                                    <tr>
+                                        <th>Hour / Period</th>
+                                        <th>Monday</th>
+                                        <th>Tuesday</th>
+                                        <th>Wednesday</th>
+                                        <th>Thursday</th>
+                                        <th>Friday</th>
+                                        <th>Saturday</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Matrix slots injected via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Core Javascript Code -->
+    <script src="app.js"></script>
+</body>
+</html>
