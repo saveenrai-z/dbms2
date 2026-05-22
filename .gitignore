@@ -1,0 +1,23 @@
+# Java & Maven/Gradle build artifacts
+bin/
+# Compiled class files
+*.class
+# IDE directories
+.idea/
+*.iml
+# Local database and config files
+local_database.json
+# Logs
+*.log
+# OS generated files
+Thumbs.db
+.DS_Store
+# Build output directories (if using Maven/Gradle)
+target/
+out/
+# Dependency jars (if any)
+lib/*.jar
+# Temporary files
+*.tmp
+# VS Code settings
+.vscode/
