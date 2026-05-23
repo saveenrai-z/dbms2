@@ -49,6 +49,15 @@ public class TimetableGenerator {
         
         // Fetch fresh copies of active records
         this.timeslots = db.getTimeslots();
+        
+        // Sort timeslots by period index first (distributes classes evenly across days and considers Saturday early)
+        this.timeslots.sort((a, b) -> {
+            int pA = getPeriodIndex(a.getTime());
+            int pB = getPeriodIndex(b.getTime());
+            if (pA != pB) return Integer.compare(pA, pB);
+            return a.getDay().compareTo(b.getDay());
+        });
+
         this.rooms = db.getRooms();
         this.subjects = db.getSubjects();
 
@@ -144,6 +153,12 @@ public class TimetableGenerator {
                 continue;
             }
 
+            // Rule 8: Subject Time Diversity - Subject cannot occupy the same time interval too many times per week for this class
+            int maxAllowed = subject.getHours() > 4 ? 2 : 1;
+            if (isSubjectScheduledAtTime(classId, subject.getSubId(), slot.getTime(), maxAllowed)) {
+                continue;
+            }
+
             for (Room room : rooms) {
                 String roomId = room.getRoomId();
 
@@ -236,6 +251,22 @@ public class TimetableGenerator {
     private boolean isRoomBusy(String roomId, String slotId) {
         Map<String, TimetableEntry> schedule = roomSchedule.get(roomId);
         return schedule != null && schedule.containsKey(slotId);
+    }
+
+    private boolean isSubjectScheduledAtTime(String classId, String subId, String timeStr, int maxAllowed) {
+        Map<String, TimetableEntry> schedule = classSchedule.get(classId);
+        if (schedule == null || schedule.isEmpty()) return false;
+
+        int count = 0;
+        for (TimetableEntry entry : schedule.values()) {
+            if (entry.getSubId().equalsIgnoreCase(subId)) {
+                Timeslot s = findTimeslotById(entry.getSlotId());
+                if (s != null && s.getTime().equalsIgnoreCase(timeStr)) {
+                    count++;
+                }
+            }
+        }
+        return count >= maxAllowed;
     }
 
     /**
@@ -364,7 +395,44 @@ public class TimetableGenerator {
         return -1; // Not an active period (breaks)
     }
 
+    private boolean validateTeacherSchedules() {
+        String[] days = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+        for (Map.Entry<String, Map<String, TimetableEntry>> teacherEntry : teacherSchedule.entrySet()) {
+            Map<String, TimetableEntry> schedule = teacherEntry.getValue();
+            if (schedule == null || schedule.isEmpty()) continue;
+
+            for (String day : days) {
+                List<Integer> activeScheduled = new ArrayList<>();
+                for (TimetableEntry entry : schedule.values()) {
+                    Timeslot s = findTimeslotById(entry.getSlotId());
+                    if (s != null && s.getDay().equalsIgnoreCase(day)) {
+                        int periodIdx = getPeriodIndex(s.getTime());
+                        if (periodIdx != -1) {
+                            activeScheduled.add(periodIdx);
+                        }
+                    }
+                }
+
+                if (activeScheduled.size() >= 2) {
+                    Collections.sort(activeScheduled);
+                    for (int i = 0; i < activeScheduled.size() - 1; i++) {
+                        int p1 = activeScheduled.get(i);
+                        int p2 = activeScheduled.get(i + 1);
+                        if (p2 - p1 > 3) { // gap >= 3 active periods (more than 2 consecutive hours)
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
     private boolean validateOptimalTimetable() {
+        if (!validateTeacherSchedules()) {
+            return false;
+        }
+
         DatabaseManager db = DatabaseManager.getInstance();
         List<ClassGroup> classGroups = db.getClassGroups();
         String[] days = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
@@ -373,6 +441,21 @@ public class TimetableGenerator {
             String classId = cg.getClassId();
             Map<String, TimetableEntry> schedule = classSchedule.get(classId);
             if (schedule == null) continue;
+
+            // Ensure Saturday has at least 2 active periods scheduled for this class
+            int satCount = 0;
+            for (TimetableEntry entry : schedule.values()) {
+                Timeslot s = findTimeslotById(entry.getSlotId());
+                if (s != null && s.getDay().equalsIgnoreCase("Saturday")) {
+                    int periodIdx = getPeriodIndex(s.getTime());
+                    if (periodIdx != -1) {
+                        satCount++;
+                    }
+                }
+            }
+            if (satCount < 2) {
+                return false;
+            }
 
             for (String day : days) {
                 List<Integer> activeScheduled = new ArrayList<>();
@@ -415,6 +498,21 @@ public class TimetableGenerator {
     private boolean validateClassSchedule(String classId) {
         Map<String, TimetableEntry> schedule = classSchedule.get(classId);
         if (schedule == null || schedule.isEmpty()) return true;
+
+        // Ensure Saturday has at least 2 active periods scheduled for this class
+        int satCount = 0;
+        for (TimetableEntry entry : schedule.values()) {
+            Timeslot s = findTimeslotById(entry.getSlotId());
+            if (s != null && s.getDay().equalsIgnoreCase("Saturday")) {
+                int periodIdx = getPeriodIndex(s.getTime());
+                if (periodIdx != -1) {
+                    satCount++;
+                }
+            }
+        }
+        if (satCount < 2) {
+            return false;
+        }
 
         String[] days = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
 

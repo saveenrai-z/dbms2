@@ -735,6 +735,11 @@ tr:hover td {
     outline: none;
 }
 
+.filter-group select option {
+    background: #111827;
+    color: #ffffff;
+}
+
 .roster-actions {
     margin-left: auto;
     display: flex;

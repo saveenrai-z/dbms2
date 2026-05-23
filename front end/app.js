@@ -901,7 +901,7 @@ function setupExportButtons() {
         }
 
         const weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-        const uniqueHours = [...new Set(timeslots.map(s => s.time))].sort();
+        const uniqueHours = [...new Set(timeslots.map(s => s.time))];
 
         // Compile CSV Rows
         let csvContent = `Time Table,${filterType.toUpperCase()}:${selectedValue}\n`;

@@ -71,7 +71,7 @@ public class TimetableGridView extends JPanel {
         lblFilter.setForeground(UIStyle.TXT_LIGHT);
         controls.add(lblFilter);
 
-        cbFilterType = new JComboBox<>(new String[]{"Class Group", "Teacher / Faculty", "Classroom"});
+        cbFilterType = new JComboBox<>(new String[]{"Class Group", "Teacher / Faculty"});
         cbFilterType.setFont(UIStyle.FONT_BODY);
         cbFilterType.setBackground(UIStyle.CARD_BG);
         cbFilterType.setForeground(UIStyle.TXT_WHITE);

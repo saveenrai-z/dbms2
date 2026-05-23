@@ -649,10 +649,10 @@ public class DatabaseManager {
 
         // 5. Save Subjects (Course Code as code, Class ID identifies SemSec)
         // 4A
-        saveSubject(new Subject("BAI401G", "Design and Analysis of Algorithms", 3, "4A", "AI101"));
-        saveSubject(new Subject("BAI402G", "Database Management System", 3, "4A", "AI103"));
+        saveSubject(new Subject("BAI401G", "Design and Analysis of Algorithms", 4, "4A", "AI101"));
+        saveSubject(new Subject("BAI402G", "Database Management System", 4, "4A", "AI103"));
         saveSubject(new Subject("BAI403T", "Principles of Operating Systems", 3, "4A", "AI104"));
-        saveSubject(new Subject("BAI404T", "Artificial Intelligence", 3, "4A", "AI105"));
+        saveSubject(new Subject("BAI404T", "Artificial Intelligence", 4, "4A", "AI105"));
         saveSubject(new Subject("BAI405L", "Artificial Intelligence Laboratory", 2, "4A", "AI105"));
         saveSubject(new Subject("BAI406W1", "Mathematical Foundations for Machine Learning", 3, "4A", "AI106"));
         saveSubject(new Subject("BAI401G_LAB", "Design and Analysis of Algorithms Laboratory", 2, "4A", "AI101"));
@@ -662,10 +662,10 @@ public class DatabaseManager {
         saveSubject(new Subject("BBS409TC", "Biology for Engineers", 2, "4A", "AI108"));
  
         // 4B
-        saveSubject(new Subject("BAI401G", "Design and Analysis of Algorithms", 3, "4B", "AI109"));
-        saveSubject(new Subject("BAI402G", "Database Management System", 3, "4B", "AI110"));
-        saveSubject(new Subject("BAI403T", "Principles of Operating Systems", 3, "4B", "AI111"));
-        saveSubject(new Subject("BAI404T", "Artificial Intelligence", 3, "4B", "AI112"));
+        saveSubject(new Subject("BAI401G", "Design and Analysis of Algorithms", 4, "4B", "AI109"));
+        saveSubject(new Subject("BAI402G", "Database Management System", 4, "4B", "AI110"));
+        saveSubject(new Subject("BAI403T", "Principles of Operating Systems", 4, "4B", "AI111"));
+        saveSubject(new Subject("BAI404T", "Artificial Intelligence", 4, "4B", "AI112"));
         saveSubject(new Subject("BAI405L", "Artificial Intelligence Laboratory", 2, "4B", "AI112"));
         saveSubject(new Subject("BAI406W1", "Mathematical Foundations for Machine Learning", 3, "4B", "AI106"));
         saveSubject(new Subject("BAI401G_LAB", "Design and Analysis of Algorithms Laboratory", 2, "4B", "AI109"));
@@ -675,10 +675,10 @@ public class DatabaseManager {
         saveSubject(new Subject("BBS409TC", "Biology for Engineers", 2, "4B", "AI108"));
  
         // 4C
-        saveSubject(new Subject("BAI401G", "Design and Analysis of Algorithms", 3, "4C", "AI113"));
-        saveSubject(new Subject("BAI402G", "Database Management System", 3, "4C", "AI114"));
-        saveSubject(new Subject("BAI403T", "Principles of Operating Systems", 3, "4C", "AI115"));
-        saveSubject(new Subject("BAI404T", "Artificial Intelligence", 3, "4C", "AI116"));
+        saveSubject(new Subject("BAI401G", "Design and Analysis of Algorithms", 4, "4C", "AI113"));
+        saveSubject(new Subject("BAI402G", "Database Management System", 4, "4C", "AI114"));
+        saveSubject(new Subject("BAI403T", "Principles of Operating Systems", 4, "4C", "AI115"));
+        saveSubject(new Subject("BAI404T", "Artificial Intelligence", 4, "4C", "AI116"));
         saveSubject(new Subject("BAI405L", "Artificial Intelligence Laboratory", 2, "4C", "AI116"));
         saveSubject(new Subject("BAI406W1", "Mathematical Foundations for Machine Learning", 3, "4C", "AI106"));
         saveSubject(new Subject("BAI401G_LAB", "Design and Analysis of Algorithms Laboratory", 2, "4C", "AI113"));

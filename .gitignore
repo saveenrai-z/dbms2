@@ -21,3 +21,6 @@ lib/*.jar
 *.tmp
 # VS Code settings
 .vscode/
+
+# Environment configurations and database credentials
+.env
