@@ -178,4 +178,5 @@ Since a custom build script is provided, you can build and launch the applicatio
 - **Student Attendance Integration**: Connecting attendance sheets to resolved timetable periods.
 - **Web Interface**: Migrating Java Swing modules into a Next.js / MongoDB Atlas cloud web app.
 #   d b m s 1  
+ #   d b m s 2  
  

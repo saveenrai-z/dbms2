@@ -148,8 +148,11 @@
                                     <label for="teacher-name">Full Name</label>
                                     <input type="text" id="teacher-name" placeholder="e.g. Prof. David Miller" required>
                                 </div>
-                                <button type="submit" class="btn btn-primary btn-block">
-                                    <i class="fa-solid fa-user-plus"></i> Save Faculty Member
+                                <button type="submit" class="btn btn-primary btn-block" id="btn-submit-teacher">
+                                    <i class="fa-solid fa-user-plus"></i> <span class="btn-text">Save Faculty Member</span>
+                                </button>
+                                <button type="button" class="btn btn-secondary btn-block btn-cancel-edit" id="btn-cancel-teacher" style="display: none; margin-top: 10px;">
+                                    <i class="fa-solid fa-xmark"></i> Cancel Edit
                                 </button>
                             </form>
                         </div>
@@ -204,8 +207,11 @@
                                         <option value="">-- Choose Teacher --</option>
                                     </select>
                                 </div>
-                                <button type="submit" class="btn btn-primary btn-block">
-                                    <i class="fa-solid fa-floppy-disk"></i> Register Subject
+                                <button type="submit" class="btn btn-primary btn-block" id="btn-submit-subject">
+                                    <i class="fa-solid fa-floppy-disk"></i> <span class="btn-text">Register Subject</span>
+                                </button>
+                                <button type="button" class="btn btn-secondary btn-block btn-cancel-edit" id="btn-cancel-subject" style="display: none; margin-top: 10px;">
+                                    <i class="fa-solid fa-xmark"></i> Cancel Edit
                                 </button>
                             </form>
                         </div>
@@ -254,8 +260,11 @@
                                     <label for="class-semester">Semester Number</label>
                                     <input type="number" id="class-semester" min="1" max="8" value="1" required>
                                 </div>
-                                <button type="submit" class="btn btn-primary btn-block">
-                                    <i class="fa-solid fa-users"></i> Save Class Group
+                                <button type="submit" class="btn btn-primary btn-block" id="btn-submit-class">
+                                    <i class="fa-solid fa-users"></i> <span class="btn-text">Save Class Group</span>
+                                </button>
+                                <button type="button" class="btn btn-secondary btn-block btn-cancel-edit" id="btn-cancel-class" style="display: none; margin-top: 10px;">
+                                    <i class="fa-solid fa-xmark"></i> Cancel Edit
                                 </button>
                             </form>
                         </div>
@@ -302,8 +311,11 @@
                                     <label for="room-no">Room Number / Room Tag</label>
                                     <input type="text" id="room-no" placeholder="e.g. 301 (Chemistry Lab)" required>
                                 </div>
-                                <button type="submit" class="btn btn-primary btn-block">
-                                    <i class="fa-solid fa-door-closed"></i> Save Classroom
+                                <button type="submit" class="btn btn-primary btn-block" id="btn-submit-room">
+                                    <i class="fa-solid fa-door-closed"></i> <span class="btn-text">Save Classroom</span>
+                                </button>
+                                <button type="button" class="btn btn-secondary btn-block btn-cancel-edit" id="btn-cancel-room" style="display: none; margin-top: 10px;">
+                                    <i class="fa-solid fa-xmark"></i> Cancel Edit
                                 </button>
                             </form>
                         </div>

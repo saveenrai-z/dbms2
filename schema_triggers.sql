@@ -212,6 +212,58 @@ EXECUTE FUNCTION audit_teacher_actions();
 
 
 -- =====================================================
+-- TRIGGER 3: AUDITING LOGS (AFTER SUBJECT INSERT/UPDATE/DELETE)
+-- =====================================================
+CREATE OR REPLACE FUNCTION audit_subject_actions()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF (TG_OP = 'INSERT') THEN
+        INSERT INTO Audit_Logs (Action_Type, Table_Name, Description)
+        VALUES ('INSERT', 'Subject', 'Added new course: ' || NEW.Sub_Name || ' (' || NEW.Sub_ID || ') for Class ' || NEW.Class_ID);
+        RETURN NEW;
+    ELSIF (TG_OP = 'UPDATE') THEN
+        INSERT INTO Audit_Logs (Action_Type, Table_Name, Description)
+        VALUES ('UPDATE', 'Subject', 'Modified course details for ID: ' || NEW.Sub_ID || '. Old Name: ' || OLD.Sub_Name || ' -> New Name: ' || NEW.Sub_Name);
+        RETURN NEW;
+    ELSIF (TG_OP = 'DELETE') THEN
+        INSERT INTO Audit_Logs (Action_Type, Table_Name, Description)
+        VALUES ('DELETE', 'Subject', 'Removed course: ' || OLD.Sub_Name || ' (' || OLD.Sub_ID || ') from Class ' || OLD.Class_ID);
+        RETURN OLD;
+    END IF;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_after_subject_crud
+AFTER INSERT OR UPDATE OR DELETE ON Subject
+FOR EACH ROW
+EXECUTE FUNCTION audit_subject_actions();
+
+-- =====================================================
+-- TRIGGER 4: AUDITING LOGS (AFTER TIMETABLE INSERT/DELETE)
+-- =====================================================
+CREATE OR REPLACE FUNCTION audit_timetable_actions()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF (TG_OP = 'INSERT') THEN
+        INSERT INTO Audit_Logs (Action_Type, Table_Name, Description)
+        VALUES ('INSERT', 'Timetable', 'Allocated Class ' || NEW.Class_ID || ' to Slot ' || NEW.Slot_ID || ' in Room ' || NEW.Room_ID || ' for Subject ' || NEW.Sub_ID);
+        RETURN NEW;
+    ELSIF (TG_OP = 'DELETE') THEN
+        INSERT INTO Audit_Logs (Action_Type, Table_Name, Description)
+        VALUES ('DELETE', 'Timetable', 'Cancelled lecture allocation for Class ' || OLD.Class_ID || ' in Slot ' || OLD.Slot_ID);
+        RETURN OLD;
+    END IF;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_after_timetable_crud
+AFTER INSERT OR DELETE ON Timetable
+FOR EACH ROW
+EXECUTE FUNCTION audit_timetable_actions();
+
+-- =====================================================
 -- 5. VERIFICATION AND SEED TEST RUNS
 -- =====================================================
 
@@ -219,10 +271,13 @@ EXECUTE FUNCTION audit_teacher_actions();
 INSERT INTO Teacher (Teacher_ID, Name, Department) VALUES ('AI105', 'Mrs. Shruthi Vishwajeeth', 'cse-aiml');
 INSERT INTO Teacher (Teacher_ID, Name, Department) VALUES ('AI106', 'Mrs. Suchetha Sheka', 'cse-aiml');
 
+-- Test Trigger 3: Insert new subject and check logs
+INSERT INTO Subject (Sub_ID, Sub_Name, Hours, Class_ID, Teacher_ID) VALUES ('BAI405L', 'Artificial Intelligence Laboratory', 2, '4A', 'AI104');
+
 -- Display Audit Logs to verify Triggers fired successfully
 SELECT * FROM Audit_Logs;
 
--- Test Trigger 1: Successfully allocate a class
+-- Test Trigger 1 & 4: Successfully allocate a class
 INSERT INTO Timetable (TT_ID, Teacher_ID, Sub_ID, Class_ID, Room_ID, Slot_ID)
 VALUES ('TT0001', 'AI101', 'BAI401G', '4A', '4A', 'SL01');
 
@@ -230,3 +285,6 @@ VALUES ('TT0001', 'AI101', 'BAI401G', '4A', '4A', 'SL01');
 -- THIS INSERT WILL FAIL AND ROLLBACK AUTOMATICALLY DUE TO TRG_BEFORE_TIMETABLE_INSERT!
 -- INSERT INTO Timetable (TT_ID, Teacher_ID, Sub_ID, Class_ID, Room_ID, Slot_ID)
 -- VALUES ('TT0002', 'AI103', 'BAI402G', '6A', '4A', 'SL01');
+
+-- Display Audit Logs again to verify Timetable Allocation Log
+SELECT * FROM Audit_Logs;

@@ -32,8 +32,29 @@ public class WebServer {
     public static void start() {
         try {
             int port = Integer.parseInt(System.getProperty("SERVER_PORT", "8080"));
-            server = HttpServer.create(new InetSocketAddress(port), 0);
-            
+            // Attempt to bind to port, retry with incremented ports if already in use
+            int attempts = 0;
+            while (true) {
+                try {
+                    if (server != null) {
+                        server.stop(0);
+                    }
+                    server = HttpServer.create(new InetSocketAddress(port), 0);
+                    break; // success
+                } catch (java.io.IOException e) {
+                    if (e.getCause() instanceof java.net.BindException || e instanceof java.net.BindException) {
+                        attempts++;
+                        if (attempts >= 5) {
+                            throw e; // give up after several attempts
+                        }
+                        System.err.println("Port " + port + " in use, trying next port...");
+                        port++; // try next port
+                    } else {
+                        throw e; // other IO errors
+                    }
+                }
+            }
+
             // Set up routes
             server.createContext("/", new StaticFileHandler());
             server.createContext("/api/status", new StatusHandler());
@@ -239,6 +260,32 @@ public class WebServer {
                         sendResponse(exchange, 409, "application/json", "{\"error\": \"Duplicate ID Constraint Violation\"}");
                     }
 
+                } else if (method.equalsIgnoreCase("PUT")) {
+                    String body = readRequestBody(exchange);
+                    Document doc = Document.parse(body);
+                    
+                    String teacherId = doc.getString("teacherId");
+                    String name = doc.getString("name");
+                    String department = doc.getString("department");
+
+                    if (teacherId == null || teacherId.trim().isEmpty() || name == null || name.trim().isEmpty()) {
+                        sendResponse(exchange, 400, "application/json", "{\"error\": \"Missing required fields: teacherId, name\"}");
+                        return;
+                    }
+
+                    if (department == null || department.trim().isEmpty()) {
+                        department = "cse-aiml";
+                    }
+
+                    Teacher teacher = new Teacher(teacherId.trim(), name.trim(), department.trim());
+                    boolean success = db.updateTeacher(teacher);
+
+                    if (success) {
+                        sendResponse(exchange, 200, "application/json", "{\"message\": \"Teacher updated successfully!\"}");
+                    } else {
+                        sendResponse(exchange, 404, "application/json", "{\"error\": \"Teacher not found or update failed\"}");
+                    }
+
                 } else if (method.equalsIgnoreCase("DELETE")) {
                     String id = getQueryParam(exchange, "id");
                     if (id == null || id.trim().isEmpty()) {
@@ -285,6 +332,42 @@ public class WebServer {
                     String body = readRequestBody(exchange);
                     Document doc = Document.parse(body);
 
+                    System.out.println("Received POST /subjects with body: " + body);
+                    String subId = doc.getString("subId");
+                    String subName = doc.getString("subName");
+                    Object hrsObj = doc.get("hours");
+                    int hours = 3;
+                    if (hrsObj != null) {
+                        try {
+                            hours = hrsObj instanceof Number ? ((Number) hrsObj).intValue() : Integer.parseInt(hrsObj.toString());
+                        } catch (Exception e) {
+                            System.err.println("Failed to parse hours, defaulting to 3. Error: " + e.getMessage());
+                        }
+                    }
+                    String classId = doc.getString("classId");
+                    String teacherId = doc.getString("teacherId");
+
+                    if (subId == null || subId.trim().isEmpty() || subName == null || subName.trim().isEmpty() ||
+                            classId == null || classId.trim().isEmpty() || teacherId == null || teacherId.trim().isEmpty()) {
+                        System.err.println("POST /subjects Missing fields. subId=" + subId + ", classId=" + classId);
+                        sendResponse(exchange, 400, "application/json", "{\"error\": \"Missing required fields: subId, subName, classId, teacherId\"}");
+                        return;
+                    }
+
+                    Subject subject = new Subject(subId.trim(), subName.trim(), hours, classId.trim(), teacherId.trim());
+                    boolean success = db.saveSubject(subject);
+
+
+                    if (success) {
+                        sendResponse(exchange, 201, "application/json", "{\"message\": \"Subject saved successfully!\"}");
+                    } else {
+                        sendResponse(exchange, 409, "application/json", "{\"error\": \"Duplicate ID Constraint Violation\"}");
+                    }
+
+                } else if (method.equalsIgnoreCase("PUT")) {
+                    String body = readRequestBody(exchange);
+                    Document doc = Document.parse(body);
+
                     String subId = doc.getString("subId");
                     String subName = doc.getString("subName");
                     Object hrsObj = doc.get("hours");
@@ -299,12 +382,12 @@ public class WebServer {
                     }
 
                     Subject subject = new Subject(subId.trim(), subName.trim(), hours, classId.trim(), teacherId.trim());
-                    boolean success = db.saveSubject(subject);
+                    boolean success = db.updateSubject(subject);
 
                     if (success) {
-                        sendResponse(exchange, 201, "application/json", "{\"message\": \"Subject saved successfully!\"}");
+                        sendResponse(exchange, 200, "application/json", "{\"message\": \"Subject updated successfully!\"}");
                     } else {
-                        sendResponse(exchange, 409, "application/json", "{\"error\": \"Duplicate ID Constraint Violation\"}");
+                        sendResponse(exchange, 404, "application/json", "{\"error\": \"Subject not found or update failed\"}");
                     }
 
                 } else if (method.equalsIgnoreCase("DELETE")) {
@@ -379,6 +462,29 @@ public class WebServer {
                         sendResponse(exchange, 409, "application/json", "{\"error\": \"Duplicate ID Constraint Violation\"}");
                     }
 
+                } else if (method.equalsIgnoreCase("PUT")) {
+                    String body = readRequestBody(exchange);
+                    Document doc = Document.parse(body);
+
+                    String classId = doc.getString("classId");
+                    String className = doc.getString("className");
+                    Object semObj = doc.get("semester");
+                    int semester = semObj instanceof Number ? ((Number) semObj).intValue() : Integer.parseInt(semObj.toString());
+
+                    if (classId == null || classId.trim().isEmpty() || className == null || className.trim().isEmpty()) {
+                        sendResponse(exchange, 400, "application/json", "{\"error\": \"Missing required fields: classId, className, semester\"}");
+                        return;
+                    }
+
+                    ClassGroup classGroup = new ClassGroup(classId.trim(), className.trim(), semester);
+                    boolean success = db.updateClassGroup(classGroup);
+
+                    if (success) {
+                        sendResponse(exchange, 200, "application/json", "{\"message\": \"Class group updated successfully!\"}");
+                    } else {
+                        sendResponse(exchange, 404, "application/json", "{\"error\": \"Class group not found or update failed\"}");
+                    }
+
                 } else if (method.equalsIgnoreCase("DELETE")) {
                     String id = getQueryParam(exchange, "id");
                     if (id == null || id.trim().isEmpty()) {
@@ -445,6 +551,32 @@ public class WebServer {
                         sendResponse(exchange, 201, "application/json", "{\"message\": \"Room saved successfully!\"}");
                     } else {
                         sendResponse(exchange, 409, "application/json", "{\"error\": \"Duplicate ID Constraint Violation\"}");
+                    }
+
+                } else if (method.equalsIgnoreCase("PUT")) {
+                    String body = readRequestBody(exchange);
+                    Document doc = Document.parse(body);
+
+                    String roomId = doc.getString("roomId");
+                    String roomNo = doc.getString("roomNo");
+                    String department = doc.getString("department");
+
+                    if (roomId == null || roomId.trim().isEmpty() || roomNo == null || roomNo.trim().isEmpty()) {
+                        sendResponse(exchange, 400, "application/json", "{\"error\": \"Missing required fields: roomId, roomNo\"}");
+                        return;
+                    }
+
+                    if (department == null || department.trim().isEmpty()) {
+                        department = "cse-aiml";
+                    }
+
+                    Room room = new Room(roomId.trim(), roomNo.trim(), department.trim());
+                    boolean success = db.updateRoom(room);
+
+                    if (success) {
+                        sendResponse(exchange, 200, "application/json", "{\"message\": \"Room updated successfully!\"}");
+                    } else {
+                        sendResponse(exchange, 404, "application/json", "{\"error\": \"Room not found or update failed\"}");
                     }
 
                 } else if (method.equalsIgnoreCase("DELETE")) {

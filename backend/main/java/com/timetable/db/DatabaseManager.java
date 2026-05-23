@@ -264,6 +264,27 @@ public class DatabaseManager {
         }
     }
 
+    public boolean updateTeacher(Teacher teacher) {
+        if (isMockMode) {
+            for (int i = 0; i < teachers.size(); i++) {
+                if (teachers.get(i).getTeacherId().equalsIgnoreCase(teacher.getTeacherId())) {
+                    teachers.set(i, teacher);
+                    saveLocalDatabase();
+                    return true;
+                }
+            }
+            return false;
+        } else {
+            try {
+                MongoCollection<Document> col = database.getCollection("teachers");
+                return col.replaceOne(new Document("teacher_id", teacher.getTeacherId()), teacher.toDocument()).getMatchedCount() > 0;
+            } catch (Exception e) {
+                System.err.println("Error updating teacher: " + e.getMessage());
+                return false;
+            }
+        }
+    }
+
     // ==========================================
     // CRUD OPERATIONS: SUBJECTS
     // ==========================================
@@ -342,6 +363,27 @@ public class DatabaseManager {
         }
     }
 
+    public boolean updateSubject(Subject subject) {
+        if (isMockMode) {
+            for (int i = 0; i < subjects.size(); i++) {
+                if (subjects.get(i).getSubId().equalsIgnoreCase(subject.getSubId()) && subjects.get(i).getClassId().equalsIgnoreCase(subject.getClassId())) {
+                    subjects.set(i, subject);
+                    saveLocalDatabase();
+                    return true;
+                }
+            }
+            return false;
+        } else {
+            try {
+                MongoCollection<Document> col = database.getCollection("subjects");
+                return col.replaceOne(new Document("sub_id", subject.getSubId()).append("class_id", subject.getClassId()), subject.toDocument()).getMatchedCount() > 0;
+            } catch (Exception e) {
+                System.err.println("Error updating subject: " + e.getMessage());
+                return false;
+            }
+        }
+    }
+
     // ==========================================
     // CRUD OPERATIONS: CLASSES
     // ==========================================
@@ -404,6 +446,27 @@ public class DatabaseManager {
         }
     }
 
+    public boolean updateClassGroup(ClassGroup classGroup) {
+        if (isMockMode) {
+            for (int i = 0; i < classes.size(); i++) {
+                if (classes.get(i).getClassId().equalsIgnoreCase(classGroup.getClassId())) {
+                    classes.set(i, classGroup);
+                    saveLocalDatabase();
+                    return true;
+                }
+            }
+            return false;
+        } else {
+            try {
+                MongoCollection<Document> col = database.getCollection("classes");
+                return col.replaceOne(new Document("class_id", classGroup.getClassId()), classGroup.toDocument()).getMatchedCount() > 0;
+            } catch (Exception e) {
+                System.err.println("Error updating class: " + e.getMessage());
+                return false;
+            }
+        }
+    }
+
     // ==========================================
     // CRUD OPERATIONS: ROOMS
     // ==========================================
@@ -461,6 +524,27 @@ public class DatabaseManager {
                 return col.deleteOne(new Document("room_id", roomId)).getDeletedCount() > 0;
             } catch (Exception e) {
                 System.err.println("Error deleting room: " + e.getMessage());
+                return false;
+            }
+        }
+    }
+
+    public boolean updateRoom(Room room) {
+        if (isMockMode) {
+            for (int i = 0; i < rooms.size(); i++) {
+                if (rooms.get(i).getRoomId().equalsIgnoreCase(room.getRoomId())) {
+                    rooms.set(i, room);
+                    saveLocalDatabase();
+                    return true;
+                }
+            }
+            return false;
+        } else {
+            try {
+                MongoCollection<Document> col = database.getCollection("rooms");
+                return col.replaceOne(new Document("room_id", room.getRoomId()), room.toDocument()).getMatchedCount() > 0;
+            } catch (Exception e) {
+                System.err.println("Error updating room: " + e.getMessage());
                 return false;
             }
         }

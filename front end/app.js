@@ -311,6 +311,9 @@ function renderTeachersTable() {
                 <td>${t.name}</td>
                 <td><span class="badge-db" style="background: ${bgStyle}; color: ${textColor}; border-color: ${borderCol};">${dept.toUpperCase()}</span></td>
                 <td class="actions-col">
+                    <button class="btn btn-primary btn-sm" onclick="editRecord('teachers', '${t.teacher_id}')" title="Edit Teacher">
+                        <i class="fa-solid fa-pen"></i>
+                    </button>
                     <button class="btn btn-danger btn-sm" onclick="deleteRecord('teachers', '${t.teacher_id}')" title="Delete Teacher">
                         <i class="fa-solid fa-trash"></i>
                     </button>
@@ -338,6 +341,9 @@ function renderSubjectsTable() {
                 <td><span class="badge-db" style="background: rgba(6,182,212,0.1); color: var(--color-secondary); border-color: rgba(6,182,212,0.2);">${s.class_id}</span></td>
                 <td>${getTeacherName(s.teacher_id)}</td>
                 <td class="actions-col">
+                    <button class="btn btn-primary btn-sm" onclick="editRecord('subjects', '${s.sub_id}', { classId: '${s.class_id}' })" title="Edit Subject">
+                        <i class="fa-solid fa-pen"></i>
+                    </button>
                     <button class="btn btn-danger btn-sm" onclick="deleteRecord('subjects', '${s.sub_id}', { classId: '${s.class_id}' })" title="Delete Subject">
                         <i class="fa-solid fa-trash"></i>
                     </button>
@@ -364,6 +370,9 @@ function renderClassesTable() {
                 <td>${cleanDeptName}</td>
                 <td>Semester ${c.semester}</td>
                 <td class="actions-col">
+                    <button class="btn btn-primary btn-sm" onclick="editRecord('classes', '${c.class_id}')" title="Edit Class">
+                        <i class="fa-solid fa-pen"></i>
+                    </button>
                     <button class="btn btn-danger btn-sm" onclick="deleteRecord('classes', '${c.class_id}')" title="Delete Class">
                         <i class="fa-solid fa-trash"></i>
                     </button>
@@ -404,6 +413,9 @@ function renderRoomsTable() {
                 <td><span class="badge-db" style="background: ${bgStyle}; color: ${textColor}; border-color: ${borderCol};">${dept.toUpperCase()}</span></td>
                 <td>Room ${r.room_no}</td>
                 <td class="actions-col">
+                    <button class="btn btn-primary btn-sm" onclick="editRecord('rooms', '${r.room_id}')" title="Edit Room">
+                        <i class="fa-solid fa-pen"></i>
+                    </button>
                     <button class="btn btn-danger btn-sm" onclick="deleteRecord('rooms', '${r.room_id}')" title="Delete Room">
                         <i class="fa-solid fa-trash"></i>
                     </button>
@@ -430,9 +442,12 @@ function getSubjectName(id) {
 // FORM SUBMISSIONS & POST APIS
 // ==========================================
 function setupFormListeners() {
-    // Add Teacher
+    // Add / Update Teacher
     document.getElementById('form-teacher').addEventListener('submit', async (e) => {
         e.preventDefault();
+        const form = e.target;
+        const isEdit = form.dataset.editMode === 'true';
+        
         const rawTeacherId = document.getElementById('teacher-id').value.trim();
         const name = document.getElementById('teacher-name').value.trim();
         const department = document.getElementById('teacher-dept').value;
@@ -453,25 +468,29 @@ function setupFormListeners() {
 
         try {
             const res = await fetch(`${API_BASE}/teachers`, {
-                method: 'POST',
+                method: isEdit ? 'PUT' : 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ teacherId, name, department })
             });
 
             const data = await res.json();
-            if (!res.ok) throw new Error(data.error || "Failed to save teacher");
+            if (!res.ok) throw new Error(data.error || `Failed to ${isEdit ? 'update' : 'save'} teacher`);
 
-            showNotification("Teacher registered successfully!", "success");
-            document.getElementById('form-teacher').reset();
+            showNotification(`Teacher ${isEdit ? 'updated' : 'registered'} successfully!`, "success");
+            if (isEdit) cancelEdit('teacher');
+            else document.getElementById('form-teacher').reset();
             loadAllData();
         } catch (err) {
             showNotification(err.message, "error");
         }
     });
 
-    // Add Subject
+    // Add / Update Subject
     document.getElementById('form-subject').addEventListener('submit', async (e) => {
         e.preventDefault();
+        const form = e.target;
+        const isEdit = form.dataset.editMode === 'true';
+        
         const rawSubId = document.getElementById('subject-id').value.trim();
         // Remove semsec suffix like -4A, -6A, etc. case-insensitively
         const subId = rawSubId.replace(/-[0-9]+[a-zA-Z]+$/, '');
@@ -482,73 +501,89 @@ function setupFormListeners() {
 
         try {
             const res = await fetch(`${API_BASE}/subjects`, {
-                method: 'POST',
+                method: isEdit ? 'PUT' : 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ subId, subName, hours, classId, teacherId })
             });
 
             const data = await res.json();
-            if (!res.ok) throw new Error(data.error || "Failed to save subject");
+            if (!res.ok) throw new Error(data.error || `Failed to ${isEdit ? 'update' : 'save'} subject`);
 
-            showNotification("Subject course registered successfully!", "success");
-            document.getElementById('form-subject').reset();
+            showNotification(`Subject course ${isEdit ? 'updated' : 'registered'} successfully!`, "success");
+            if (isEdit) {
+                cancelEdit('subject');
+                document.getElementById('subject-class').disabled = false;
+            } else {
+                document.getElementById('form-subject').reset();
+            }
             loadAllData();
         } catch (err) {
             showNotification(err.message, "error");
         }
     });
 
-    // Add Class
+    // Add / Update Class
     document.getElementById('form-class').addEventListener('submit', async (e) => {
         e.preventDefault();
+        const form = e.target;
+        const isEdit = form.dataset.editMode === 'true';
+        
         const classId = document.getElementById('class-id').value;
         const className = document.getElementById('class-name').value;
         const semester = parseInt(document.getElementById('class-semester').value);
 
         try {
             const res = await fetch(`${API_BASE}/classes`, {
-                method: 'POST',
+                method: isEdit ? 'PUT' : 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ classId, className, semester })
             });
 
             const data = await res.json();
-            if (!res.ok) throw new Error(data.error || "Failed to save class group");
+            if (!res.ok) throw new Error(data.error || `Failed to ${isEdit ? 'update' : 'save'} class group`);
 
-            showNotification("Class group saved successfully!", "success");
-            document.getElementById('form-class').reset();
+            showNotification(`Class group ${isEdit ? 'updated' : 'saved'} successfully!`, "success");
+            if (isEdit) cancelEdit('class');
+            else document.getElementById('form-class').reset();
             loadAllData();
         } catch (err) {
             showNotification(err.message, "error");
         }
     });
 
-    // Add Room
+    // Add / Update Room
     document.getElementById('form-room').addEventListener('submit', async (e) => {
         e.preventDefault();
+        const form = e.target;
+        const isEdit = form.dataset.editMode === 'true';
+        
         const roomId = document.getElementById('room-id').value.trim();
         const roomNo = document.getElementById('room-no').value.trim();
         const department = document.getElementById('room-dept').value;
 
         try {
             const res = await fetch(`${API_BASE}/rooms`, {
-                method: 'POST',
+                method: isEdit ? 'PUT' : 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ roomId, roomNo, department })
             });
 
             const data = await res.json();
-            if (!res.ok) throw new Error(data.error || "Failed to save room");
+            if (!res.ok) throw new Error(data.error || `Failed to ${isEdit ? 'update' : 'save'} room`);
 
-            showNotification("Classroom details saved successfully!", "success");
-            document.getElementById('form-room').reset();
+            showNotification(`Classroom details ${isEdit ? 'updated' : 'saved'} successfully!`, "success");
+            if (isEdit) cancelEdit('room');
+            else document.getElementById('form-room').reset();
             loadAllData();
         } catch (err) {
             showNotification(err.message, "error");
         }
     });
 
-
+    document.getElementById('btn-cancel-teacher').addEventListener('click', () => cancelEdit('teacher'));
+    document.getElementById('btn-cancel-subject').addEventListener('click', () => cancelEdit('subject'));
+    document.getElementById('btn-cancel-class').addEventListener('click', () => cancelEdit('class'));
+    document.getElementById('btn-cancel-room').addEventListener('click', () => cancelEdit('room'));
 }
 
 // Global record deletion mapping
@@ -573,6 +608,110 @@ window.deleteRecord = async function(resource, id, extraParams = {}) {
         loadAllData();
     } catch (err) {
         showNotification(err.message, "error");
+    }
+};
+
+window.cancelEdit = function(type) {
+    const form = document.getElementById(`form-${type}`);
+    if (form) {
+        form.reset();
+        form.dataset.editMode = 'false';
+        
+        // Make ID fields editable again
+        const idField = document.getElementById(`${type}-id`);
+        if (idField) {
+            idField.readOnly = false;
+            idField.style.opacity = '1';
+        }
+        
+        // Revert buttons
+        document.getElementById(`btn-submit-${type}`).querySelector('.btn-text').textContent = 
+            type === 'teacher' ? 'Save Faculty Member' :
+            type === 'subject' ? 'Register Subject' :
+            type === 'class' ? 'Save Class Group' : 'Save Classroom';
+            
+        document.getElementById(`btn-cancel-${type}`).style.display = 'none';
+        
+        // Subject specific
+        if (type === 'subject') {
+            document.getElementById('subject-class').disabled = false;
+        }
+    }
+};
+
+window.editRecord = function(resource, id, extraParams = {}) {
+    // Switch to appropriate tab
+    const tabName = resource === 'classes' ? 'class' : (resource === 'rooms' ? 'room' : (resource === 'subjects' ? 'subject' : 'teacher'));
+    const tabItem = document.querySelector(`.nav-item[data-tab="data-${tabName}"]`);
+    if (tabItem) tabItem.click();
+    
+    if (resource === 'teachers') {
+        const t = teachers.find(x => x.teacher_id === id);
+        if (t) {
+            const form = document.getElementById('form-teacher');
+            document.getElementById('teacher-id').value = t.teacher_id;
+            document.getElementById('teacher-id').readOnly = true;
+            document.getElementById('teacher-id').style.opacity = '0.7';
+            document.getElementById('teacher-dept').value = t.department || 'cse-aiml';
+            document.getElementById('teacher-name').value = t.name;
+            
+            form.dataset.editMode = 'true';
+            document.getElementById('btn-submit-teacher').querySelector('.btn-text').textContent = 'Update Faculty Member';
+            document.getElementById('btn-cancel-teacher').style.display = 'block';
+            
+            form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    } else if (resource === 'subjects') {
+        const s = subjects.find(x => x.sub_id === id && x.class_id === extraParams.classId);
+        if (s) {
+            const form = document.getElementById('form-subject');
+            document.getElementById('subject-id').value = s.sub_id;
+            document.getElementById('subject-id').readOnly = true;
+            document.getElementById('subject-id').style.opacity = '0.7';
+            document.getElementById('subject-name').value = s.sub_name;
+            document.getElementById('subject-hours').value = s.hours;
+            document.getElementById('subject-class').value = s.class_id;
+            document.getElementById('subject-class').disabled = true;
+            document.getElementById('subject-teacher').value = s.teacher_id;
+            
+            form.dataset.editMode = 'true';
+            document.getElementById('btn-submit-subject').querySelector('.btn-text').textContent = 'Update Subject';
+            document.getElementById('btn-cancel-subject').style.display = 'block';
+            
+            form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    } else if (resource === 'classes') {
+        const c = classes.find(x => x.class_id === id);
+        if (c) {
+            const form = document.getElementById('form-class');
+            document.getElementById('class-id').value = c.class_id;
+            document.getElementById('class-id').readOnly = true;
+            document.getElementById('class-id').style.opacity = '0.7';
+            document.getElementById('class-name').value = c.class_name;
+            document.getElementById('class-semester').value = c.semester;
+            
+            form.dataset.editMode = 'true';
+            document.getElementById('btn-submit-class').querySelector('.btn-text').textContent = 'Update Class Group';
+            document.getElementById('btn-cancel-class').style.display = 'block';
+            
+            form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    } else if (resource === 'rooms') {
+        const r = rooms.find(x => x.room_id === id);
+        if (r) {
+            const form = document.getElementById('form-room');
+            document.getElementById('room-id').value = r.room_id;
+            document.getElementById('room-id').readOnly = true;
+            document.getElementById('room-id').style.opacity = '0.7';
+            document.getElementById('room-dept').value = r.department || 'cse-aiml';
+            document.getElementById('room-no').value = r.room_no;
+            
+            form.dataset.editMode = 'true';
+            document.getElementById('btn-submit-room').querySelector('.btn-text').textContent = 'Update Classroom';
+            document.getElementById('btn-cancel-room').style.display = 'block';
+            
+            form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
     }
 };
 
